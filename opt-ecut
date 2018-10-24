@@ -1,0 +1,68 @@
+#!/bin/bash
+# make dirs
+for ecutwfc in `LANG=en_US seq $2 $4 $3`
+ do
+ mkdir -p $(pwd)/$1/$ecutwfc
+ A=${!ecutwfc} * 4
+ 
+ #input
+cat > $1/$ecutwfc/$ecutwfc.$1.scf.in << EOF
+ &CONTROL
+                 calculation = 'scf' ,
+                      outdir = '$(pwd)/$1/$ecutwfc' ,
+                      wfcdir = '$(pwd)/$1/$ecutwfc' ,
+                  pseudo_dir = './../ps' ,
+                      prefix = 'NNaCs' ,
+               etot_conv_thr = 1.0d-6 ,
+               forc_conv_thr = 1.0d-5 ,
+                     tstress = .true. ,
+                     tprnfor = .true. ,
+/
+&SYSTEM
+                       ibrav = 2,
+                   celldm(1) = 14.62,
+                         nat = 3,
+                        ntyp = 3,
+                     ecutwfc = $ecutwfc ,
+                     ecutrho = $A ,
+			occupations = 'smearing'
+			degauss = 0.02
+			smearing = 'methfessel-paxton'
+                     starting_magnetization(1) = 0.9 ,
+                     starting_magnetization(2) = 0.5 ,
+                     starting_magnetization(3) = 0.5 ,
+/
+&ELECTRONS
+            electron_maxstep = 300,
+            conv_thr = 10d-10 ,
+            mixing_beta = 0.4D0 ,
+/
+
+&CELL
+               cell_dynamics = 'bfgs' ,
+/
+
+ATOMIC_SPECIES
+    N  14.0067 N.pbe-n-kjpaw_psl.1.0.0.UPF
+    Na 22.989769 Na.pbe-spnl-kjpaw_psl.1.0.0.UPF
+    Cs 132.90545 Cs.pbe-spnl-kjpaw_psl.1.0.0.UPF
+ATOMIC_POSITIONS (crystal)
+N	0	0	0
+Na	0.25	0.25	0.25
+Cs	0.75	0.75	0.75
+K_POINTS automatic 
+10	10	10   1 1 1 
+
+
+EOF
+ #input
+ #run
+ 
+ mpirun.openmpi -np 8 /home/kanjouri/qe-6.3/bin/pw.x < $1/$ecutwfc/$ecutwfc.$1.scf.in |tee $1/$ecutwfc/$ecutwfc.$1.scf.out
+ $ECHO ' ####################################################### '
+ $ECHO "End of $ecutwfc "
+ $ECHO ' ####################################################### '
+
+done
+
+
