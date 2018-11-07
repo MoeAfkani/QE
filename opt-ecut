@@ -4,10 +4,9 @@ for ecutwfc in `LANG=en_US seq $2 $4 $3`
  do
  mkdir -p $(pwd)/$1/$ecutwfc
  A=${!ecutwfc} * 4
- 
- #input
+#input
 cat > $1/$ecutwfc/$ecutwfc.$1.scf.in << EOF
- &CONTROL
+&CONTROL
                  calculation = 'scf' ,
                       outdir = '$(pwd)/$1/$ecutwfc' ,
                       wfcdir = '$(pwd)/$1/$ecutwfc' ,
@@ -56,11 +55,7 @@ K_POINTS automatic
 
 
 EOF
- #input
- #run
- 
+#run 
 mpirun.openmpi -np 8 /home/kanjouri/qe-6.3/bin/pw.x < $1/$ecutwfc/$ecutwfc.$1.scf.in |tee $1/$ecutwfc/$ecutwfc.$1.scf.out
  $ECHO "End of $ecutwfc "
 done
-
-
